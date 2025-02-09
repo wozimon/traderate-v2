@@ -1,0 +1,437 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Trade Calculator</title>
+    <style>
+        @keyframes gradientBG {
+            0% { background-position: 0% 50%; }
+            50% { background-position: 100% 50%; }
+            100% { background-position: 0% 50%; }
+        }
+
+        @keyframes float {
+            0% { transform: translateY(0px); }
+            50% { transform: translateY(-10px); }
+            100% { transform: translateY(0px); }
+        }
+
+        @keyframes pulse {
+            0% { transform: scale(1); }
+            50% { transform: scale(1.05); }
+            100% { transform: scale(1); }
+        }
+
+        body {
+            margin: 0;
+            padding: 0;
+            min-height: 100vh;
+            font-family: 'Inter', -apple-system, sans-serif;
+            background: linear-gradient(-45deg, #ffffff, #e8fff0, #d0ffe0, #b8ffd0);
+            background-size: 400% 400%;
+            animation: gradientBG 15s ease infinite;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 2rem;
+        }
+
+        .header {
+            text-align: center;
+            margin-bottom: 3rem;
+            animation: float 6s ease-in-out infinite;
+        }
+
+        h1 {
+            font-size: 3.5rem;
+            color: #1a1a1a;
+            margin: 0;
+            text-shadow: 2px 2px 4px rgba(0,0,0,0.1);
+        }
+
+        .subtitle {
+            font-size: 1.2rem;
+            color: #666;
+            margin-top: 0.5rem;
+        }
+
+        .search-container {
+            position: relative;
+            margin-bottom: 2rem;
+        }
+
+        .search-input {
+            width: 100%;
+            padding: 1rem 1.5rem;
+            font-size: 1rem;
+            border: none;
+            border-radius: 12px;
+            background: rgba(255, 255, 255, 0.9);
+            box-shadow: 0 4px 15px rgba(0,0,0,0.05);
+            transition: all 0.3s ease;
+        }
+
+        .search-input:focus {
+            outline: none;
+            box-shadow: 0 4px 20px rgba(0,0,0,0.1);
+        }
+
+        .trade-grid {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 2rem;
+            margin-bottom: 2rem;
+        }
+
+        .trade-column {
+            background: rgba(255, 255, 255, 0.9);
+            padding: 1.5rem;
+            border-radius: 16px;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.05);
+            transition: transform 0.3s ease;
+        }
+
+        .trade-column:hover {
+            transform: translateY(-5px);
+        }
+
+        .trade-column h2 {
+            color: #1a1a1a;
+            margin-top: 0;
+            text-align: center;
+            font-size: 1.5rem;
+        }
+
+        .slot {
+            background: rgba(255, 255, 255, 0.8);
+            border: 2px solid rgba(0,0,0,0.05);
+            border-radius: 10px;
+            padding: 1rem;
+            margin-bottom: 1rem;
+            min-height: 50px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .slot:hover {
+            background: rgba(255, 255, 255, 1);
+            box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+        }
+
+        .slot.selected {
+            border-color: #4CAF50;
+            background: rgba(76, 175, 80, 0.1);
+        }
+
+        .item-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(120px, 1fr));
+            gap: 1rem;
+            margin-top: 2rem;
+        }
+
+        .item-button {
+            background: white;
+            border: none;
+            padding: 0.8rem;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            font-size: 0.9rem;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.05);
+        }
+
+        .item-button:hover {
+            background: #4CAF50;
+            color: white;
+            transform: translateY(-2px);
+        }
+
+        .calculate-button {
+            display: block;
+            width: 200px;
+            margin: 2rem auto;
+            padding: 1rem 2rem;
+            font-size: 1.1rem;
+            border: none;
+            border-radius: 30px;
+            background: linear-gradient(45deg, #4CAF50, #45a049);
+            color: white;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            animation: pulse 2s infinite;
+        }
+
+        .calculate-button:hover {
+            transform: scale(1.05);
+            box-shadow: 0 4px 20px rgba(76, 175, 80, 0.3);
+        }
+
+        .result {
+            text-align: center;
+            font-size: 1.5rem;
+            margin-top: 2rem;
+            padding: 1rem;
+            border-radius: 12px;
+            background: rgba(255, 255, 255, 0.9);
+            animation: float 4s ease-in-out infinite;
+        }
+
+        .win { color: #4CAF50; }
+        .lose { color: #f44336; }
+        .fair { color: #2196F3; }
+
+        @media (max-width: 768px) {
+            .trade-grid {
+                grid-template-columns: 1fr;
+            }
+            
+            .container {
+                padding: 1rem;
+            }
+            
+            h1 {
+                font-size: 2.5rem;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>Trade Calculator</h1>
+            <p class="subtitle">Calculate your trade value instantly</p>
+        </div>
+
+        <div class="search-container">
+            <input type="text" id="itemSearch" class="search-input" placeholder="Search items..." onkeyup="filterItems()">
+        </div>
+
+        <div class="trade-grid">
+            <div class="trade-column">
+                <h2>Your Items</h2>
+                <div class="slot" id="yourSlot1" onclick="selectSlot('yourSlot1')"></div>
+                <div class="slot" id="yourSlot2" onclick="selectSlot('yourSlot2')"></div>
+                <div class="slot" id="yourSlot3" onclick="selectSlot('yourSlot3')"></div>
+                <div class="slot" id="yourSlot4" onclick="selectSlot('yourSlot4')"></div>
+            </div>
+            
+            <div class="trade-column">
+                <h2>Opponent's Items</h2>
+                <div class="slot" id="opponentSlot1" onclick="selectSlot('opponentSlot1')"></div>
+                <div class="slot" id="opponentSlot2" onclick="selectSlot('opponentSlot2')"></div>
+                <div class="slot" id="opponentSlot3" onclick="selectSlot('opponentSlot3')"></div>
+                <div class="slot" id="opponentSlot4" onclick="selectSlot('opponentSlot4')"></div>
+            </div>
+        </div>
+
+        <button class="calculate-button" onclick="calculateTrade()">Calculate Trade</button>
+        <div class="result" id="tradeResult"></div>
+        <div class="item-grid" id="itemList"></div>
+    </div>
+
+    <script>
+        // Your existing JavaScript code remains the same
+        const prices = {
+            "ghost": 0.5,
+            "ice": 0.85,
+            "light": 1,
+            "quake": 1.5,
+            "love": 2.5,
+            "spider": 2.5,
+            "gravity": 3.5,
+            "pain": 3.5,
+            "magma": 5,
+            "phoenix": 12,
+            "sound": 12,
+            "shadow": 15,
+            "blizzard": 20,
+            "control": 27,
+            "rumble": 32.5,
+            "venom": 40,
+            "mammonth": 43,
+            "buddha": 43,
+            "portal": 45,
+            "spirit": 55,
+            "trex": 105,
+            "dough": 150,
+            "leopard": 225,
+            "gas": 400,
+            "yeti": 700,
+            "kitsune": 725,
+            "dragon-w": 1200,
+            "dragon-e": 1400,
+            "2x boss drop chance": 325,
+            "fast boats": 325,
+            "+1 fruit storage": 350,
+            "2x money": 375,
+            "2x mastery": 375,
+            "dark blade": 1405,
+            "fruit notifier": 2800,
+            "perm rocket": 25,
+            "perm spin": 50,
+            "perm chop": 75,
+            "perm spring": 100,
+            "perm spike": 150,
+            "perm smoke": 200,
+            "perm bomb": 280,
+            "perm falcon": 350,
+            "perm fire": 400,
+            "perm sand": 600,
+            "perm diamond": 600,
+            "perm ice": 650,
+            "perm barrier": 800,
+            "perm rubber": 850,
+            "perm ghost": 900,
+            "perm dark": 1000,
+            "perm light": 1050,
+            "perm magma": 1450,
+            "perm buddha": 1500,
+            "perm spider": 1600,
+            "perm love": 1600,
+            "perm sound": 1700,
+            "perm phoenix": 1800,
+            "perm portal": 1800,
+            "perm gravity": 1900,
+            "perm rumble": 1900,
+            "perm blizzard": 1950,
+            "perm pain": 2000,
+            "perm mammoth": 2000,
+            "perm trex": 2000,
+            "perm venom": 2100,
+            "perm shadow": 2200,
+            "perm dough": 2200,
+            "perm control": 2800,
+            "perm spirit": 2800,
+            "perm leopard": 3400,
+            "perm kitsune": 4250,
+            "perm dragon": 6800,
+        };
+
+        const alternative_names = {
+            "quake": ["квейк", "дрожь", "дрож", "землетрясение"],
+            "magma": ["магма", "лава"],
+            "love": ["любовь", "лов", "лове"],
+            "spider": ["нитки", "паук", "спайдер", "спидер", "string"],
+            "gravity": ["гравити", "гравитация"],
+            "pain": ["paw", "боль", "пейн", "лапа"],
+            "phoenix": ["феникс", "птица феникс", "feniks", "fenix", "пхоеникс"],
+            "sound": ["звук", "саунд", "соунд"],
+            "shadow": ["тень", "шадоу", "шадов"],
+            "blizzard": ["метель", "буря", "снег", "близард", "близзард", "blizard"],
+            "control": ["контроль", "контрол", "кантроль"],
+            "rumble": ["рамбл", "румбл", "электричество", "ramble", "rumbl"],
+            "venom": ["веном", "венам", "винам", "яд", "отрава"],
+            "portal": ["портал", "портл", "door", "дверь"],
+            "mammonth": ["мамонт", "mamont", "mammont"],
+            "buddha": ["budha", "budda", "buda", "буда", "будда"],
+            "spirit": ["спирит", "дух", "соул", "душа", "soul", "духи"],
+            "trex": ["трекс", "t-rex", "т рекс", "т-рекс", "динозавр", "ти рекс", "тирекс"],
+        };
+
+        const categories = {
+            "blox-fruits": [
+                "quake", "magma", "love", "spider", "gravity", "pain", "phoenix", "sound",
+                "shadow", "blizzard", "control", "rumble", "venom", "portal", "mammonth",
+                "buddha", "spirit", "trex", "dough", "leopard", "kitsune", "dragon-w", "dragon-e", "yeti", "light", "gas",
+                "2x boss drop chance", "fast boats", "+1 fruit storage", "2x money", "2x mastery",
+                "dark blade", "fruit notifier", "perm rocket", "perm spin", "perm chop",
+                "perm spring", "perm spike", "perm smoke", "perm bomb", "perm falcon",
+                "perm fire", "perm sand", "perm diamond", "perm ice", "perm barrier",
+                "perm rubber", "perm ghost", "perm dark", "perm light", "perm magma",
+                "perm buddha", "perm spider", "perm love", "perm sound", "perm phoenix",
+                "perm portal", "perm gravity", "perm rumble", "perm blizzard", "perm pain",
+                "perm mammoth", "perm trex", "perm venom", "perm shadow", "perm dough",
+                "perm control", "perm spirit", "perm leopard", "perm kitsune", "perm dragon"
+            ]
+        };
+
+        let selectedSlot = null;
+        let selectedItems = {};
+        let currentCategory = 'blox-fruits';
+
+        function selectSlot(slotId) {
+            if (selectedSlot) {
+                document.getElementById(selectedSlot).classList.remove('selected');
+            }
+            selectedSlot = slotId;
+            document.getElementById(selectedSlot).classList.add('selected');
+        }
+
+        function addItemToSlot(itemName) {
+            if (selectedSlot) {
+                selectedItems[selectedSlot] = [itemName];
+                document.getElementById(selectedSlot).textContent = itemName;
+            }
+        }
+
+        function createItemButtons() {
+            const itemList = document.getElementById('itemList');
+            itemList.innerHTML = '';
+
+            for (const item in prices) {
+                const button = document.createElement('button');
+                button.classList.add('item-button');
+                button.textContent = item;
+                button.setAttribute('data-item-name', item);
+                button.onclick = () => {
+                    addItemToSlot(item);
+                };
+
+                if (categories[currentCategory].includes(item)) {
+                    button.style.display = 'block'
+                } else {
+                    button.style.display = 'none'
+                }
+
+                itemList.appendChild(button);
+            }
+        }
+
+        function calculateTrade() {
+            let yourTotal = 0;
+            let opponentTotal = 0;
+
+            for (let i = 1; i <= 4; i++) {
+                let yourSlotItem = selectedItems['yourSlot' + i] ? selectedItems['yourSlot' + i][0] : null;
+                let opponentSlotItem = selectedItems['opponentSlot' + i] ? selectedItems['opponentSlot' + i][0] : null;
+
+                yourTotal += yourSlotItem ? prices[yourSlotItem] : 0;
+                opponentTotal += opponentSlotItem ? prices[opponentSlotItem] : 0;
+            }
+
+            const resultDiv = document.getElementById('tradeResult');
+            let resultText = '';
+            if (yourTotal < opponentTotal) {
+                resultText = '<span class="win">Win! (Ты в плюсе)</span>';
+            } else if (yourTotal > opponentTotal) {
+                resultText = '<span class="lose">Lose! (Ты в минусе)</span>';
+            } else {
+                resultText = '<span class="fair">Fair Trade (Ничья)</span>';
+            }
+            resultDiv.innerHTML = resultText;
+        }
+
+        function filterItems() {
+            const searchText = document.getElementById('itemSearch').value.toLowerCase();
+            const buttons = document.querySelectorAll('.item-button');
+
+            buttons.forEach(button => {
+                const itemName = button.getAttribute('data-item-name');
+                const itemAliases = alternative_names[itemName] || [];
+                const matches = [itemName, ...itemAliases].some(name => 
+                    name.toLowerCase().includes(searchText));
+
+                button.style.display = matches && 
+                    categories[currentCategory].includes(itemName) ? 'block' : 'none';
+            });
+        }
+
+        createItemButtons();
+    </script>
+</body>
+</html>
